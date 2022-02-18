@@ -1,3 +1,4 @@
 *.pdf
 *.bin
 *.log
+.DS_Store
