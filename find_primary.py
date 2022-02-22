@@ -1,8 +1,11 @@
+import numpy as np
 import rebound
 
-def find_primary(part,planets,sim):
+import unhash
+
+def find_primary(part,planets,name_all,sim):
 # user can feed the index, name or particle object itself
-    
+        
     try:
         if isinstance(part,int):
             p = sim.particles[part]
@@ -10,6 +13,7 @@ def find_primary(part,planets,sim):
             p = sim.particles[part]
         if isinstance(part,rebound.Particle):
             p = part
+            
 # return None if body was removed
     except:
         return None
@@ -27,23 +31,24 @@ def find_primary(part,planets,sim):
                 pls.append(pl)
         except rebound.ParticleNotFound:
             continue
+            
     
     d2min = np.inf
-    primary = unhash(sim.particles[0].hash,name_all)
+    primary = unhash.unhash(sim.particles[0].hash,name_all)
 # default to orbiting primary   
     for pl in pls:
         try:
             if pl.hash.value == p.hash.value:
                 continue # don't want to be bound to oneself
-            rh = pl.d * (pl.m/(3*sim.particles[name_star].m))**(1/3)
+            rh = pl.d * (pl.m/(3*sim.particles[name_all[0]].m))**(1/3)
             d2 = (p.x-pl.x)**2 + (p.y-pl.y)**2 + (p.z-pl.z)**2
             if d2 < rh**2 and d2 < d2min:
                 d2min = d2
-                primary = unhash(pl.hash,name_all)
+                primary = unhash.unhash(pl.hash,name_all)
         except:
             continue
             
-    if primary == unhash(sim.particles[0].hash,name_all):
+    if primary == unhash.unhash(sim.particles[0].hash,name_all):
         orb = p.calculate_orbit(primary=sim.particles[0])
         if orb.a < 0:
             primary = 'Galaxy'
