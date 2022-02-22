@@ -9,6 +9,9 @@ for a brief period, then moons inserted so that forward integration with moons c
 Generates standard REBOUND simulation archive binary files, and a .log text file containing status updates for the 
 simulation (add/remove particle, close encounters, etc)
 
+Makes some plots:
+ - timeline
+
 Includes the following files
  - moon_sims.ipynb           Sets up, runs and analyses the simulations
  - find_primary.py           Checks each object to find which planet it is bound to, or star, or unbound ('Galaxy')
