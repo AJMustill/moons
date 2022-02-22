@@ -4,7 +4,7 @@ import numpy as np
 import rebound
 import time
 
-import globals
+import globs
 import heartbeat
 import logged_merge
 import SimEvent
@@ -20,8 +20,8 @@ class MetaSim:
             self.filestem = filestem
             self.archive = filestem + 'bin'
             self.log = filestem + 'log'
-            globals.glob_archive = self.archive
-            globals.glob_log = self.log
+            globs.glob_archive = self.archive
+            globs.glob_log = self.log
 
             # observational data for EPIC 220208795 from van der Kamp et al (2021)
             Mstar = 0.85 * u.Msun
@@ -73,7 +73,7 @@ class MetaSim:
             sim.heartbeat = heartbeat.heartbeat
 
 
-            sim.automateSimulationArchive(globals.glob_archive, interval=1000.,deletefile=True)
+            sim.automateSimulationArchive(globs.glob_archive, interval=1000.,deletefile=True)
 
             sim.add(m=Mstar.to_value(u.Msun),r=Rstar.to_value(u.au),hash=self.name_star)
             for j in range(self.Npl):
@@ -83,14 +83,14 @@ class MetaSim:
 
             sim.move_to_com()
             self.sim = sim
-            globals.glob_planets = [n for n in self.name_pl]
-            globals.glob_npl_start = len(globals.glob_planets)
-            globals.glob_npl = globals.glob_npl_start
-            globals.glob_darr = [[[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]],
-                                 [[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]]]
-            globals.glob_is_eject = False
-            globals.glob_is_stop = False
-            globals.glob_names = [self.name_star] + self.name_pl
+            globs.glob_planets = [n for n in self.name_pl]
+            globs.glob_npl_start = len(globs.glob_planets)
+            globs.glob_npl = globs.glob_npl_start
+            globs.glob_darr = [[[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]],
+                               [[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]]]
+            globs.glob_is_eject = False
+            globs.glob_is_stop = False
+            globs.glob_names = [self.name_star] + self.name_pl
 
 
             
@@ -111,7 +111,7 @@ class MetaSim:
         with open(self.log,'a') as f:
             print('Running planets-only simulation...',file=f)
     
-        while ((self.sim.t < self.tmax) and (globals.glob_is_close == False) and (globals.glob_is_eject == False)):
+        while ((self.sim.t < self.tmax) and (globs.glob_is_close == False) and (globs.glob_is_eject == False)):
             try:
 # this is pretty ugly but seems to be the only way I can abort on a close encounter.
 # I guess that because the heartbeat function is called from the C code it can't pass exceptions
@@ -125,7 +125,7 @@ class MetaSim:
         sim_t1 = self.sim.t
         clock_t1 = time.time()
     
-        globals.glob_is_stop = True
+        globs.glob_is_stop = True
 
         print('Planets-only simulation complete')
         print(f'{sim_t1-sim_t0} years took {clock_t1-clock_t0} seconds')
@@ -182,7 +182,7 @@ class MetaSim:
         Omo_offset = np.radians(rng.uniform(0,360,2)) #we rotate Omega for all moons in the same moon system by the same amount
         self.name_moons = [[m+str(i+1) for m in self.name_mo_stem] for i in range(self.Npl)]
         self.name_moons_flat = list(np.array(self.name_moons).flat)
-        globals.glob_names = globals.glob_names + self.name_moons_flat
+        globs.glob_names = globs.glob_names + self.name_moons_flat
 
         for i in range(self.Npl):
             for j in range(Nmoonsppl):
@@ -252,12 +252,12 @@ class MetaSim:
                 for h in hashes:
                     print(f'{h} ejected at {sim.t} years')
                     print(self.sim.particles[h])
-                    with open(globals.glob_log,'a') as f:
+                    with open(globs.glob_log,'a') as f:
                         print(f'{h} ejected at {sim.t} years',file=f)
                         print(self.sim.particles[h],file=f)
-                    if h in globals.glob_planets:
-                        globals.glob_planets.remove(h)
-                        globals.glob_npl = globals.glob_npl-1
+                    if h in globs.glob_planets:
+                        globs.glob_planets.remove(h)
+                        globs.glob_npl = globs.glob_npl-1
                     self.sim.remove(hash=h)
                 self.sim.move_to_com()    
 
@@ -269,7 +269,7 @@ class MetaSim:
         sim_t1 = self.sim.t
         clock_t1 = time.time()
     
-        globals.glob_is_stop = True
+        globs.glob_is_stop = True
 
         print('Moons simulation complete')
         print(f'{sim_t1-sim_t0} years took {clock_t1-clock_t0} seconds')
@@ -349,16 +349,16 @@ class MetaSim:
         self.p2mset = []
         self.stmset = []
         self.ejmset = []
-        self.mhost = [[] for m in name_moons_flat]
+        self.mhost = [[] for m in self.name_moons_flat]
 
         for i in self.post_moons:
             p1m = []
             p2m = []
             stm = []
             ejm = []
-            for j,m in enumerate(name_moons_flat):
+            for j,m in enumerate(self.name_moons_flat):
                 try:
-                    pl = find_primary(m,name_pl,self.sa[i])
+                    pl = find_primary(m,self.name_pl,self.sa[i])
                 except:
                     pl = None
                 if pl == name_pl[0]:

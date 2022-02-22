@@ -1,7 +1,7 @@
 import numpy as np
 
 import unhash
-import globals
+import globs
 
 def heartbeat(sim_pointer):
 #    global glob_dclo
@@ -12,8 +12,8 @@ def heartbeat(sim_pointer):
     
     sim = sim_pointer.contents
     
-    pls = globals.glob_planets[:globals.glob_npl]
-    if globals.glob_npl >= 2:
+    pls = globs.glob_planets[:globs.glob_npl]
+    if globs.glob_npl >= 2:
         for i,p in enumerate(pls):
             pp = sim.particles[p]
             rh2 = pp.d**2 * (pp.m/(3*sim.particles[0].m))**(2/3)
@@ -27,24 +27,24 @@ def heartbeat(sim_pointer):
                 dy = pp.y-qq.y
                 dz = pp.z-qq.z
                 d2 = dx*dx + dy*dy + dz*dz
-                if d2 <= rh2*globals.glob_dclo:
-                    globals.glob_darr[i][j][2] = globals.glob_darr[i][j][1]
-                    globals.glob_darr[i][j][1] = globals.glob_darr[i][j][0]
-                    globals.glob_darr[i][j][0] = d2
-                    globals.glob_is_close = True
+                if d2 <= rh2*globs.glob_dclo:
+                    globs.glob_darr[i][j][2] = globs.glob_darr[i][j][1]
+                    globs.glob_darr[i][j][1] = globs.glob_darr[i][j][0]
+                    globs.glob_darr[i][j][0] = d2
+                    globs.glob_is_close = True
 #                    print(f't = {sim.t} CE in progress {glob_darr[i][j]}')
-                    if d2 > globals.glob_darr[i][j][1] and globals.glob_darr[i][j][1] < globals.glob_darr[i][j][2]:
+                    if d2 > globs.glob_darr[i][j][1] and globs.glob_darr[i][j][1] < globs.glob_darr[i][j][2]:
                         print(f'CE between {p} and {q} with dist '
                               f'{np.sqrt(d2)} au at {sim.t} years')
                         print(pp)
                         print(qq)
-                        with open(globals.glob_log,'a') as f:
+                        with open(globs.glob_log,'a') as f:
                             print(f'CE between {p} and {q} with dist '
                                   f'{np.sqrt(d2)} au at {sim.t} years',file=f)
                             print(pp,file=f)
                             print(qq,file=f)
                 else:
-                    globals.glob_darr[i][j] = [9999.9,9999.9,9999.9]
+                    globs.glob_darr[i][j] = [9999.9,9999.9,9999.9]
                     
                     
     return
