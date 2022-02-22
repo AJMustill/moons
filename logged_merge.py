@@ -1,5 +1,5 @@
 import unhash
-import globals
+import globs
 
 def logged_merge(sim_pointer,collided_particles_index):
         
@@ -7,7 +7,7 @@ def logged_merge(sim_pointer,collided_particles_index):
     ps = sim.particles # easy access to list of particles
 
 # save at this point
-    sim.simulationarchive_snapshot(globals.glob_archive)
+    sim.simulationarchive_snapshot(globs.glob_archive)
     
     i = collided_particles_index.p1   # Note that p1 < p2 is not guaranteed.    
     j = collided_particles_index.p2 
@@ -28,16 +28,16 @@ def logged_merge(sim_pointer,collided_particles_index):
         keep = j
         kill = i
         ret = 1
-    print(f'{unhash.unhash(ps[kill].hash,globals.glob_names)} removed by collision with '
-          f'{unhash.unhash(ps[keep].hash,globals.glob_names)} at {sim.t} years')
+    print(f'{unhash.unhash(ps[kill].hash,globs.glob_names)} removed by collision with '
+          f'{unhash.unhash(ps[keep].hash,globs.glob_names)} at {sim.t} years')
     print(ps[i])
     print(ps[j])
     orbit = ps[kill].calculate_orbit(primary=ps[keep])
     print(f'Orbelts: a = {orbit.a} au; e = {orbit.e} ; I = {orbit.inc} ; Omega = {orbit.Omega}; '
           f'omega = {orbit.omega} ; MA = {orbit.M}')
-    with open(globals.glob_log,'a') as f:
-        print(f'{unhash.unhash(ps[kill].hash,globals.glob_names)} removed by collision with '
-              f'{unhash.unhash(ps[keep].hash,globals.glob_names)} at {sim.t} years',file=f)
+    with open(globs.glob_log,'a') as f:
+        print(f'{unhash.unhash(ps[kill].hash,globs.glob_names)} removed by collision with '
+              f'{unhash.unhash(ps[keep].hash,globs.glob_names)} at {sim.t} years',file=f)
         print(ps[i],file=f)
         print(ps[j],file=f)
         print(f'Orbelts: a = {orbit.a} au; e = {orbit.e} ; I = {orbit.inc} ; Omega = {orbit.Omega}; '
@@ -50,11 +50,12 @@ def logged_merge(sim_pointer,collided_particles_index):
     ps[keep].r = merged_radius # update to joined radius
 # We have to remove the body here to get the energy logging correct, and then tell
 # REBOUND NOT to remove something as an effect of the function return value
-    print(globals.glob_planets)
-    print(globals.glob_names)
-    if unhash.unhash(ps[kill].hash,globals.glob_names) in globals.glob_planets:
-        globals.glob_planets.remove(unhash(ps[kill].hash,globals.glob_names))
-        gloabls.glob_npl = globals.glob_npl-1
+    print(globs.glob_planets)
+    print(globs.glob_names)
+    name = unhash.unhash(ps[kill].hash,globs.glob_names)
+    if name in globs.glob_planets:
+        globs.glob_planets.remove(name)
+        globs.glob_npl = globs.glob_npl-1
     sim.remove(kill)
 
     Eout = sim.calculate_energy()
