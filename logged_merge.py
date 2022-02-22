@@ -50,8 +50,6 @@ def logged_merge(sim_pointer,collided_particles_index):
     ps[keep].r = merged_radius # update to joined radius
 # We have to remove the body here to get the energy logging correct, and then tell
 # REBOUND NOT to remove something as an effect of the function return value
-    print(globs.glob_planets)
-    print(globs.glob_names)
     name = unhash.unhash(ps[kill].hash,globs.glob_names)
     if name in globs.glob_planets:
         globs.glob_planets.remove(name)
