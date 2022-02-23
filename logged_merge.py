@@ -56,6 +56,10 @@ def logged_merge(sim_pointer,collided_particles_index):
         globs.glob_npl = globs.glob_npl-1
     sim.remove(kill)
 
+    print('Current planets: '+' '.join(globs.glob_planets))
+    with open(globs.glob_log,'a') as f:
+        print('Current planets: '+' '.join(globs.glob_planets),file=f)
+    
     Eout = sim.calculate_energy()
     
 #    if sim.track_energy_offset:
