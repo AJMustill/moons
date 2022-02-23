@@ -220,6 +220,7 @@ class MetaSim:
         with open(self.log,'a') as f:
             print('Rewinding simulation...',file=f)
         self.sim.dt = -self.sim.dt
+        self.sim.heartbeat = None
         tstart = self.sim.t - t
         self.sim.integrate(tstart)
         self.sim.dt = -self.sim.dt
@@ -287,6 +288,8 @@ class MetaSim:
         self.sim.simulationarchive_snapshot(self.archive)
         self.tmstart = self.sim.t
         self.tend = self.tmstart + self.tmoons
+        
+        self.sim.heartbeat = heartbeat.heartbeat
 
         print('Moons added')
         with open(self.log,'a') as f:
