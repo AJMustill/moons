@@ -15,18 +15,56 @@ import find_primary
 
 class MetaSim:
     
-    def __init__(self,filestem='test/test0000.',sim=None):
+    def __init__(self,filestem='test/test0000.'):
         
         print('Simulation '+filestem)
         print()
         
-        if sim is None:
-            self.filestem = filestem
-            self.archive = filestem + 'bin'
-            self.log = filestem + 'log'
-            globs.glob_archive = self.archive
-            globs.glob_log = self.log
+        self.filestem = filestem
+        self.archive = filestem + 'bin'
+        self.log = filestem + 'log'
+        globs.glob_archive = self.archive
+        globs.glob_log = self.log
 
+        # times to run for
+        self.tmax = 1e6
+        self.TINY = 1e-3
+        self.tmoons = 1e3
+
+        try:
+
+            self.sim = rebound.Simulation(self.archive)
+            self.heartbeat = heartbeat.heartbeat
+
+
+
+            with open(self.log) as log:
+                lines = log.readlines()
+            
+            for l in lines:
+                if 'Added star:' in l:
+                    self.name_star = l.split()[-1]
+                if 'Added planets:' in l:
+                    self.name_pl = l.split()[2:]
+                if 'Added moons at' in l:
+                    self.name_moons_flat = l.split()[5:]
+                    self.tmstart = float(l.split()[3])
+                if 'Planets-only simulation complete':
+                    self.pl_done = True
+
+                if not self.pl_done:
+                    self.sim.automateSimulationArchive(globs.glob_archive, interval=1000.,deletefile=False)
+
+
+                    
+                
+            print('Restored from save')
+        
+        except (FileNotFoundError, RuntimeError):
+
+            self.pl_done = False
+            self.is_stop = False
+            self.has_moons = False
             # observational data for EPIC 220208795 from van der Kamp et al (2021)
             Mstar = 0.85 * u.Msun
             Rstar = 0.830 * u.Rsun
@@ -69,15 +107,12 @@ class MetaSim:
 
     #        globals.glob_names = [name_star] + name_pl
 
-            # times to run for
-            self.tmax = 1e6
-            self.TINY = 1e-3
-            self.tmoons = 1e3
-            
             # create rebound simulation
             print('Creating new simulation...')
             with open(self.log,'a') as f:
                 print('Creating new simulation...',file=f)
+                print('Added star: '+self.name_star,file=f)
+                print('Added planets: '+' '.join(self.name_pl),file=f)
             sim = rebound.Simulation()
             sim.integrator = "ias15"
             sim.units = ('yr', 'AU', 'Msun')
@@ -104,18 +139,17 @@ class MetaSim:
             globs.glob_darr = [[[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]],
                                [[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]]]
             globs.glob_is_eject = False
-            globs.glob_is_stop = False
             globs.glob_names = [self.name_star] + self.name_pl
 
 
             
-        else:
-            # need to know what point we're at...
-            pass
             
         return
     
     def run_planets(self):
+        
+        if self.pl_done:
+            return
         
         sim_t0 = self.sim.t
         clock_t0 = time.time()
@@ -140,7 +174,7 @@ class MetaSim:
         sim_t1 = self.sim.t
         clock_t1 = time.time()
     
-        globs.glob_is_stop = True
+        self.pl_done = True
 
         print('Planets-only simulation complete')
         print(f'{sim_t1-sim_t0} years took {clock_t1-clock_t0} seconds')
@@ -153,6 +187,9 @@ class MetaSim:
         
     def rewind(self,t=1):
         
+        if self.has_moons:
+            return
+
         print('Rewinding simulation...')
         with open(self.log,'a') as f:
             print('Rewinding simulation...',file=f)
@@ -169,6 +206,9 @@ class MetaSim:
     
     def add_moons(self):
         
+        if self.has_moons:
+            return
+
         print('Adding moons...')
         with open(self.log,'a') as f:
             print('Adding moons..',file=f)
@@ -219,15 +259,22 @@ class MetaSim:
 
         # save a snapshot
         self.sim.simulationarchive_snapshot(self.archive)
-        self.tend = self.sim.t + self.tmoons
+        self.tmstart = self.sim.t
+        self.tend = self.tmstart + self.tmoons
 
         print('Moons added')
         with open(self.log,'a') as f:
             print('Moons added',file=f)
+            print(f'Added moons at {self.tmstart} years:'+' '.join(self.name_moons_flat),file=f)
+
+        self.has_moons = True
         
         return
     
     def run_moons(self):
+        
+        if self.is_stop:
+            return
         
         print('Running moons simulation...')
         with open(self.log,'a') as f:
@@ -295,7 +342,7 @@ class MetaSim:
         sim_t1 = self.sim.t
         clock_t1 = time.time()
     
-        globs.glob_is_stop = True
+        self.is_stop = True
 
         print('Moons simulation complete')
         print(f'{sim_t1-sim_t0} years took {clock_t1-clock_t0} seconds')
