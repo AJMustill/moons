@@ -28,6 +28,13 @@ def logged_merge(sim_pointer,collided_particles_index):
         keep = j
         kill = i
         ret = 1
+
+    nkill = unhash.unhash(ps[kill].hash,globs.glob_names)
+    nkeep = unhash.unhash(ps[keep].hash,globs.glob_names)
+    if nkill in globs.glob_planets and nkeep in globs.glob_planets:
+        print(f'CE between {nkill} '
+              f'and {nkeep} with dist '
+              f'{globs.glob_darr[i-1][j-1][0]} au at {sim.t} years')
     print(f'{unhash.unhash(ps[kill].hash,globs.glob_names)} removed by collision with '
           f'{unhash.unhash(ps[keep].hash,globs.glob_names)} at {sim.t} years')
     print(ps[i])
@@ -36,6 +43,10 @@ def logged_merge(sim_pointer,collided_particles_index):
     print(f'Orbelts: a = {orbit.a} au; e = {orbit.e} ; I = {orbit.inc} ; Omega = {orbit.Omega}; '
           f'omega = {orbit.omega} ; MA = {orbit.M}')
     with open(globs.glob_log,'a') as f:
+        if nkill in globs.glob_planets and nkeep in globs.glob_planets:
+            print(f'CE between {nkill} '
+                  f'and {nkeep} with dist '
+                  f'{globs.glob_darr[i-1][j-1][0]} au at {sim.t} years',file=f)
         print(f'{unhash.unhash(ps[kill].hash,globs.glob_names)} removed by collision with '
               f'{unhash.unhash(ps[keep].hash,globs.glob_names)} at {sim.t} years',file=f)
         print(ps[i],file=f)

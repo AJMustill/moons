@@ -35,7 +35,7 @@ def heartbeat(sim_pointer):
                     globs.glob_darr[i][j][1] = globs.glob_darr[i][j][0]
                     globs.glob_darr[i][j][0] = d2
                     globs.glob_is_close = True
-#                    print(f't = {sim.t} CE in progress {glob_darr[i][j]}')
+#                    print(f't = {sim.t} CE in progress {globs.glob_darr[i][j]}')
                     if d2 > globs.glob_darr[i][j][1] and globs.glob_darr[i][j][1] < globs.glob_darr[i][j][2]:
                         print(f'CE between {p} and {q} with dist '
                               f'{np.sqrt(d2)} au at {sim.t} years')
