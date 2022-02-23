@@ -36,7 +36,18 @@ class MetaSim:
             edisc = 0.72
             adisc = ((c.G*Mstar*Pdisc**2/(4*np.pi**2))**(1/3)).to(u.au)
 
-            rng = np.random.default_rng(324622)
+            # check if saved random seed exists
+            seed_file_pl = self.filestem+'pl.seed'
+            try:
+                with open(seed_file_pl,'r') as f:
+                    seed = int(f.read())
+                rng = np.random.default_rng(seed)
+            except:
+                seed = int(time.time()*1000)
+                rng = np.random.default_rng(seed)
+                with open(seed_file_pl,'w') as f:
+                    print(str(seed),file=f)
+
 
             # initial planet architecture
             self.Npl = 2
@@ -162,7 +173,17 @@ class MetaSim:
         with open(self.log,'a') as f:
             print('Adding moons..',file=f)
             
-        rng = np.random.default_rng(87276173)
+        # check if saved random seed exists
+        seed_file_moon = self.filestem+'moon.seed'
+        try:
+            with open(seed_file_moon,'r') as f:
+                seed = int(f.read())
+            rng = np.random.default_rng(seed)
+        except:
+            seed = int(time.time()*1000)
+            rng = np.random.default_rng(seed)
+            with open(seed_file_moon,'w') as f:
+                print(str(seed),file=f)
         
         # moons. Data from JPL horizons 2022-01-26
         Nmoonsppl = 4 #per planet
