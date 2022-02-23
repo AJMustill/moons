@@ -572,4 +572,6 @@ class MetaSim:
                 ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
                                              fc=col[n2],ec=col[n1]))
                 
+        plt.savefig(self.filestem+'_timeline.pdf')
+                
         return
