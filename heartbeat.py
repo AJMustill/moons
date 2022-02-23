@@ -3,6 +3,9 @@ import numpy as np
 import unhash
 import globs
 
+def donothing(sim_pointer):
+    return
+
 def heartbeat(sim_pointer):
 #    global glob_dclo
 #    global glob_planets

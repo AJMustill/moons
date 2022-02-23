@@ -220,7 +220,7 @@ class MetaSim:
         with open(self.log,'a') as f:
             print('Rewinding simulation...',file=f)
         self.sim.dt = -self.sim.dt
-        self.sim.heartbeat = None
+        self.sim.heartbeat = heartbeat.donothing #can't set None here...
         tstart = self.sim.t - t
         self.sim.integrate(tstart)
         self.sim.dt = -self.sim.dt
