@@ -15,16 +15,17 @@ import find_primary
 
 class MetaSim:
     
-    def __init__(self,filestem='test/test0000.'):
+    def __init__(self,filestem='test/test'):
         
         print('Simulation '+filestem)
         print()
         
         self.filestem = filestem
-        self.archive = filestem + 'bin'
-        self.log = filestem + 'log'
+        self.archive = filestem + '.bin'
+        self.log = filestem + '.log'
         globs.glob_archive = self.archive
         globs.glob_log = self.log
+        globs.glob_is_close = False
 
         # times to run for
         self.tmax = 1e6
@@ -34,31 +35,56 @@ class MetaSim:
         try:
 
             self.sim = rebound.Simulation(self.archive)
-            self.heartbeat = heartbeat.heartbeat
+            self.sim.heartbeat = heartbeat.heartbeat
 
-
+            self.pl_done = False
+            self.is_stop = False
 
             with open(self.log) as log:
                 lines = log.readlines()
+                
+            globs.glob_planets = []
             
             for l in lines:
                 if 'Added star:' in l:
                     self.name_star = l.split()[-1]
+                    globs.glob_names = [self.name_star]
                 if 'Added planets:' in l:
                     self.name_pl = l.split()[2:]
+                    globs.glob_names = globs.glob_names + self.name_pl
                 if 'Added moons at' in l:
                     self.name_moons_flat = l.split()[5:]
                     self.tmstart = float(l.split()[3])
-                if 'Planets-only simulation complete':
+                    self.tend = self.tmstart+self.tmoons
+                    self.has_moons = True
+                    globs.glob_names = globs.glob_names + self.name_moons_flat
+                if 'Planets-only simulation complete' in l:
                     self.pl_done = True
+                if 'Moons simulation complete' in l:
+                    self.is_stop = True
+                if 'CE between ' in l:
+                    globs.glob_is_close = True
+                if 'Current planets:' in l:
+                    globs.glob_planets = l.split()[2:]
+                    globs.glob_npl = len(globs.glob_planets)
 
                 if not self.pl_done:
-                    self.sim.automateSimulationArchive(globs.glob_archive, interval=1000.,deletefile=False)
+                    self.sim.automateSimulationArchive(globs.glob_archive,interval=1000.,deletefile=False)
 
-
+                if self.pl_done and not self.is_stop:
+                    self.sim.automateSimulationArchive(globs.glob_archive,interval=1.,deletefile=False)
                     
+            globs.glob_npl_start = len(self.name_pl)
+            if len(globs.glob_planets) == 0:
+                globs.glob_planets = [n for n in self.name_pl]
+                globs.glob_npl = globs.glob_npl_start
+            globs.glob_darr = [[[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]],
+                               [[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]]]
+
                 
             print('Restored from save')
+            with open(self.log,'a') as f:
+                print('Restored from save',file=f)
         
         except (FileNotFoundError, RuntimeError):
 
@@ -75,7 +101,7 @@ class MetaSim:
             adisc = ((c.G*Mstar*Pdisc**2/(4*np.pi**2))**(1/3)).to(u.au)
 
             # check if saved random seed exists
-            seed_file_pl = self.filestem+'pl.seed'
+            seed_file_pl = self.filestem+'.pl.seed'
             try:
                 with open(seed_file_pl,'r') as f:
                     seed = int(f.read())
@@ -214,7 +240,7 @@ class MetaSim:
             print('Adding moons..',file=f)
             
         # check if saved random seed exists
-        seed_file_moon = self.filestem+'moon.seed'
+        seed_file_moon = self.filestem+'.moon.seed'
         try:
             with open(seed_file_moon,'r') as f:
                 seed = int(f.read())
@@ -265,7 +291,7 @@ class MetaSim:
         print('Moons added')
         with open(self.log,'a') as f:
             print('Moons added',file=f)
-            print(f'Added moons at {self.tmstart} years:'+' '.join(self.name_moons_flat),file=f)
+            print(f'Added moons at {self.tmstart} years: '+' '.join(self.name_moons_flat),file=f)
 
         self.has_moons = True
         
@@ -331,7 +357,12 @@ class MetaSim:
                     if h in globs.glob_planets:
                         globs.glob_planets.remove(h)
                         globs.glob_npl = globs.glob_npl-1
-                    self.sim.remove(hash=h)
+                        self.sim.remove(hash=h)
+
+                print('Current planets: '+' '.join(globs.glob_planets))
+                with open(globs.glob_log,'a') as f:
+                    print('Current planets: '+' '.join(globs.glob_planets),file=f)
+
                 self.sim.move_to_com()    
 
                 Eout = self.sim.calculate_energy()
