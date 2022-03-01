@@ -19,27 +19,33 @@ def logged_merge(sim_pointer,collided_particles_index):
     # merged radius assuming keep the same mean density
     merged_radius = (total_mass**2/(ps[i].m**2/ps[i].r**3 + ps[j].m**2/ps[j].r**3))**(1/3)
 
+#    print('A: Current bodies: '+' '.join([unhash.unhash(p.hash,globs.glob_names) for p in sim.particles]))
+#    print('A: Current hashes: '+' '.join(str([p.hash for p in sim.particles])))
+
+
     # keep the more massive body and remove the lesser
     if ps[i].m >= ps[j].m:
         keep = i
         kill = j
-        ret = 2
     else:
         keep = j
         kill = i
-        ret = 1
+
+#    print('B: Current bodies: '+' '.join([unhash.unhash(p.hash,globs.glob_names) for p in sim.particles]))
+#    print('B: Current hashes: '+' '.join(str([p.hash for p in sim.particles])))
 
     nkill = unhash.unhash(ps[kill].hash,globs.glob_names)
     nkeep = unhash.unhash(ps[keep].hash,globs.glob_names)
+#    print(keep,nkeep,kill,nkill)
     if nkill in globs.glob_planets and nkeep in globs.glob_planets:
         print(f'CE between {nkill} '
               f'and {nkeep} with dist '
               f'{globs.glob_darr[i-1][j-1][0]} au at {sim.t} years')
-    print(f'{unhash.unhash(ps[kill].hash,globs.glob_names)} removed by collision with '
-          f'{unhash.unhash(ps[keep].hash,globs.glob_names)} at {sim.t} years')
-    print(ps[i])
-    print(ps[j])
-    orbit = ps[kill].calculate_orbit(primary=ps[keep])
+    print(f'{nkill} removed by collision with '
+          f'{nkeep} at {sim.t} years')
+    print(ps[nkill])
+    print(ps[nkeep])
+    orbit = ps[nkill].calculate_orbit(primary=ps[nkeep])
     print(f'Orbelts: a = {orbit.a} au; e = {orbit.e} ; I = {orbit.inc} ; Omega = {orbit.Omega}; '
           f'omega = {orbit.omega} ; MA = {orbit.M}')
     with open(globs.glob_log,'a') as f:
@@ -47,27 +53,37 @@ def logged_merge(sim_pointer,collided_particles_index):
             print(f'CE between {nkill} '
                   f'and {nkeep} with dist '
                   f'{globs.glob_darr[i-1][j-1][0]} au at {sim.t} years',file=f)
-        print(f'{unhash.unhash(ps[kill].hash,globs.glob_names)} removed by collision with '
-              f'{unhash.unhash(ps[keep].hash,globs.glob_names)} at {sim.t} years',file=f)
-        print(ps[i],file=f)
-        print(ps[j],file=f)
+        print(f'{nkill} removed by collision with '
+              f'{nkeep} at {sim.t} years',file=f)
+        print(ps[nkill],file=f)
+        print(ps[nkeep],file=f)
         print(f'Orbelts: a = {orbit.a} au; e = {orbit.e} ; I = {orbit.inc} ; Omega = {orbit.Omega}; '
               f'omega = {orbit.omega} ; MA = {orbit.M}',file=f)
     
+#    print('C: Current bodies: '+' '.join([unhash.unhash(p.hash,globs.glob_names) for p in sim.particles]))
+#    print('C: Current hashes: '+' '.join(str([p.hash for p in sim.particles])))
+
     Ein = sim.calculate_energy()
     
+    tmp = ps[keep].hash
     ps[keep] = merged_planet   # update p1's state vector (mass and radius will need corrections)
     ps[keep].m = total_mass    # update to total mass
     ps[keep].r = merged_radius # update to joined radius
+    ps[keep].hash = tmp        # needed to avoid names f'ing up
 # We have to remove the body here to get the energy logging correct, and then tell
 # REBOUND NOT to remove something as an effect of the function return value
-    name = unhash.unhash(ps[kill].hash,globs.glob_names)
-    if name in globs.glob_planets:
-        globs.glob_planets.remove(name)
+#    print('D: Current bodies: '+' '.join([unhash.unhash(p.hash,globs.glob_names) for p in sim.particles]))
+#    print('D: Current hashes: '+' '.join(str([p.hash for p in sim.particles])))
+#    print('Removing '+nkill)
+
+    if nkill in globs.glob_planets:
+        globs.glob_planets.remove(nkill)
         globs.glob_npl = globs.glob_npl-1
     sim.remove(kill)
 
     print('Current planets: '+' '.join(globs.glob_planets))
+#    print('E: Current bodies: '+' '.join([unhash.unhash(p.hash,globs.glob_names) for p in sim.particles]))
+#    print('E: Current hashes: '+' '.join(str([p.hash for p in sim.particles])))
     with open(globs.glob_log,'a') as f:
         print('Current planets: '+' '.join(globs.glob_planets),file=f)
     
