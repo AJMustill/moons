@@ -78,9 +78,9 @@ class Sim:
         self.ejnm = [len(n) for n in self.ejmoons]
         self.Nmoonej = len(self.ejmset)
         self.mhost = np.array(self.mhost)
-        for i in range(len(self.mhost[0])-1):
-            if (self.mhost[:,i+1] != self.mhost[:,i]).any():
-                print(self.t[i],self.mhost[:,i+1])
+#        for i in range(len(self.mhost[0])-1):
+#            if (self.mhost[:,i+1] != self.mhost[:,i]).any():
+#                print(self.t[i],self.mhost[:,i+1])
         
         return
     

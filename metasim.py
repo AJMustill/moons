@@ -501,9 +501,9 @@ class MetaSim:
         self.ejnm = [len(n) for n in self.ejmoons]
         self.Nmoonej = len(self.ejmset)
         self.mhost = np.array(self.mhost)
-        for i in range(len(self.mhost[0])-1):
-            if (self.mhost[:,i+1] != self.mhost[:,i]).any():
-                print(self.t[i],self.mhost[:,i+1])
+#        for i in range(len(self.mhost[0])-1):
+#            if (self.mhost[:,i+1] != self.mhost[:,i]).any():
+#                print(self.t[i],self.mhost[:,i+1])
         
         return
 
@@ -607,7 +607,7 @@ class MetaSim:
         
         # add the moon timelines
         trel = (np.array(self.t)-self.t0)/(self.tend-self.t0)
-        print(self.mhost)
+#        print(self.mhost)
 
         for j,m in enumerate(self.name_moons_flat):
             for i in range(len(self.t)):
@@ -649,7 +649,7 @@ class MetaSim:
                     n1 = c.names[1]
                     n2 = c.names[0]
                 xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
-                print(xy)
+#                print(xy)
                 ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
                                              fc=col[n2],ec=col[n1]))
                 
