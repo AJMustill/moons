@@ -554,15 +554,18 @@ class MetaSim:
             ax.add_patch(plbox[i])
         
         circsize = 0.025
-        starcirc = patches.Ellipse((starbox.get_x(),starbox.get_y()+0.5*starbox.get_height()),circsize,
+#        starcirc = patches.Ellipse((starbox.get_x(),starbox.get_y()+0.5*starbox.get_height()),circsize,
+        starcirc = patches.Ellipse((starbox.get_x(),starbox.get_y()),circsize,
                                    circsize*xsize/ysize,
                                    facecolor=col[self.name_star],edgecolor='k')
         ax.add_patch(starcirc)
-        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()+0.5*plbox[1].get_height()),circsize,
+#        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()+0.5*plbox[1].get_height()),circsize,
+        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet1'],edgecolor='k')
         ax.add_patch(p1circ)
-        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()+0.5*plbox[0].get_height()),circsize,
+#        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()+0.5*plbox[0].get_height()),circsize,
+        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet2'],edgecolor='k')
         ax.add_patch(p2circ)
