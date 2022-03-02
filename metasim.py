@@ -538,7 +538,7 @@ class MetaSim:
         galbox = patches.Rectangle((margin,ytracker),1-2*margin,1-2*margin,edgecolor='k',fill=None)
         ax.add_patch(galbox)
         
-        ytracker += (margin + self.Nmoonej*moonwidth + axwidth)
+        ytracker += (margin + axwidth)
         starbox = patches.Rectangle((2*margin,ytracker),1-4*margin,3*margin+
                                     (self.Nmoonmax[0]+self.Nmoonmax[1]+self.Nmoonstar)*moonwidth,
                                     edgecolor='k',fill=None)
@@ -575,6 +575,9 @@ class MetaSim:
         xend = 1-4*margin
         xaxis = lines.Line2D([xstart,xend],[margin+0.5*axwidth,margin+0.5*axwidth],c='k')
         ax.add_line(xaxis)
+        ax.text(xstart,margin+0.05*axwidth,'0',ha='center')
+        ax.text(xend,margin+0.05*axwidth,str(self.tmoons),ha='center')
+        ax.text(0.5*(xstart+xend),margin+0.8*axwidth,'Time since first CE [yr]',ha='center')
         
         # add CE events
         CElines = []
@@ -641,15 +644,26 @@ class MetaSim:
                 continue
             
             try:
-                yind = self.name_moons_flat.index(c.names[0])
+                if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
+                    yind0 = self.name_moons_flat.index(c.names[0])
+                    yind1 = self.name_moons_flat.index(c.names[1])
+                    yind = yind1
+                else:
+                    yind0 = self.name_moons_flat.index(c.names[0])
+                    yind1 = self.name_moons_flat.index(c.names[0])
+                    yind = yind0
                 n1 = c.names[0]
                 n2 = c.names[1]
             except:
                 print('planet lost?',c.names)
             else:
                 try:
+#                    print(yind)
                     start = min(np.where([y is not np.nan for y in moon_y[yind]])[0])
-                    xind = min(np.where([i is None for i in self.mhost[yind]])[0][start:])
+#                    print(start)
+#                    print(moon_y[yind])
+#                    print(self.mhost[yind])
+                    xind = min(np.where([i is None for i in self.mhost[yind0]])[0][start:])
                 except:
                     yind = self.name_moons_flat.index(c.names[1]) #just in case you removed the wrong body
                     xind = min(np.where([i is None for i in self.mhost[yind]])[0][1:])
@@ -657,8 +671,12 @@ class MetaSim:
                     n2 = c.names[0]
                 xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
                 ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
-                                             fc=col[n2],ec=col[n1]))
-                
+                                             fc=col[n2],ec=col[n1],zorder=5))
+                # for moon-moon collisions, link the lines
+                if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
+                    ax.add_line(lines.Line2D([xy[0],xy[0]],[moon_y[yind0][xind-1],
+                                                            moon_y[yind1][xind-1]],c=col[n1]))
+        
         plt.savefig(self.filestem+'_timeline.pdf')
                 
         return
