@@ -588,12 +588,14 @@ class MetaSim:
         pl1slots = {}
         count = 0
         for p in self.p1mset:
-            pl1slots[p] = plbox[0].get_y() + plbox[0].get_height() - count*moonwidth - margin
+#            pl1slots[p] = plbox[0].get_y() + plbox[0].get_height() - count*moonwidth - margin
+            pl1slots[p] = plbox[0].get_y() + count*moonwidth + margin
             count += 1
         count = 0
         pl2slots = {} 
         for p in self.p2mset:
-            pl2slots[p] = plbox[1].get_y() + plbox[1].get_height() - count*moonwidth - margin
+#            pl2slots[p] = plbox[1].get_y() + plbox[1].get_height() - count*moonwidth - margin
+            pl2slots[p] = plbox[1].get_y() + count*moonwidth + margin
             count += 1
         stslots = {}
         count = 0
