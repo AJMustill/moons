@@ -542,7 +542,8 @@ class MetaSim:
         starbox = patches.Rectangle((2*margin,ytracker),1-4*margin,3*margin+
                                     (self.Nmoonmax[0]+self.Nmoonmax[1]+self.Nmoonstar)*moonwidth,
                                     edgecolor='k',fill=None)
-        ytracker += (margin + self.Nmoonstar*moonwidth)
+#        ytracker += (margin + self.Nmoonstar*moonwidth)
+        ytracker += margin
         ax.add_patch(starbox)
 
         plbox = []
@@ -600,12 +601,12 @@ class MetaSim:
         stslots = {}
         count = 0
         for p in self.stmset:
-            stslots[p] = plbox[0].get_y()-(count+0.5)*moonwidth
+            stslots[p] = plbox[1].get_y() + plbox[1].get_height() + margin + (count+0.5)*moonwidth
             count += 1
         ejslots = {}
         count = 0
         for p in self.ejmset:
-            ejslots[p] = starbox.get_y()-(count+0.5)*moonwidth
+            ejslots[p] = starbox.get_y() + starbox.get_height() + margin + (count+0.5)*moonwidth
             count+=1
 
         moon_y = [[] for i in self.name_moons_flat]
