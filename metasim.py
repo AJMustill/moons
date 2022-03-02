@@ -560,12 +560,12 @@ class MetaSim:
                                    facecolor=col[self.name_star],edgecolor='k')
         ax.add_patch(starcirc)
 #        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()+0.5*plbox[1].get_height()),circsize,
-        p1circ = patches.Ellipse((plbox[0].get_x(),plbox[1].get_y()),circsize,
+        p1circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet1'],edgecolor='k')
         ax.add_patch(p1circ)
 #        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()+0.5*plbox[0].get_height()),circsize,
-        p2circ = patches.Ellipse((plbox[1].get_x(),plbox[0].get_y()),circsize,
+        p2circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet2'],edgecolor='k')
         ax.add_patch(p2circ)
@@ -647,14 +647,14 @@ class MetaSim:
                 print('planet lost?',c.names)
             else:
                 try:
-                    xind = min(np.where([i is None for i in self.mhost[yind]])[0][1:])
+                    start = min(np.where([y is not np.nan for y in moon_y[yind]])[0])
+                    xind = min(np.where([i is None for i in self.mhost[yind]])[0][start:])
                 except:
                     yind = self.name_moons_flat.index(c.names[1]) #just in case you removed the wrong body
                     xind = min(np.where([i is None for i in self.mhost[yind]])[0][1:])
                     n1 = c.names[1]
                     n2 = c.names[0]
                 xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
-#                print(xy)
                 ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
                                              fc=col[n2],ec=col[n1]))
                 
