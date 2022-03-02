@@ -538,31 +538,35 @@ class MetaSim:
         galbox = patches.Rectangle((margin,ytracker),1-2*margin,1-2*margin,edgecolor='k',fill=None)
         ax.add_patch(galbox)
         
-        ytracker += (margin + self.Nmoonej*moonwidth + axwidth)
+        ytracker += (margin + axwidth)
         starbox = patches.Rectangle((2*margin,ytracker),1-4*margin,3*margin+
                                     (self.Nmoonmax[0]+self.Nmoonmax[1]+self.Nmoonstar)*moonwidth,
                                     edgecolor='k',fill=None)
-        ytracker += (margin + self.Nmoonstar*moonwidth)
+#        ytracker += (margin + self.Nmoonstar*moonwidth)
+        ytracker += margin
         ax.add_patch(starbox)
 
         plbox = []
         Npl = 2
         for i in range(Npl):
-            plbox.append(patches.Rectangle((3*margin,ytracker),1-6*margin,self.Nmoonmax[i-1]*moonwidth,
+            plbox.append(patches.Rectangle((3*margin,ytracker),1-6*margin,self.Nmoonmax[i]*moonwidth,
                                            edgecolor='k',fill=None))
-            ytracker += (margin + self.Nmoonmax[i-1]*moonwidth)
+            ytracker += (margin + self.Nmoonmax[i]*moonwidth)
             ax.add_patch(plbox[i])
         
         circsize = 0.025
-        starcirc = patches.Ellipse((starbox.get_x(),starbox.get_y()+0.5*starbox.get_height()),circsize,
+#        starcirc = patches.Ellipse((starbox.get_x(),starbox.get_y()+0.5*starbox.get_height()),circsize,
+        starcirc = patches.Ellipse((starbox.get_x(),starbox.get_y()),circsize,
                                    circsize*xsize/ysize,
                                    facecolor=col[self.name_star],edgecolor='k')
         ax.add_patch(starcirc)
-        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()+0.5*plbox[1].get_height()),circsize,
+#        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()+0.5*plbox[1].get_height()),circsize,
+        p1circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet1'],edgecolor='k')
         ax.add_patch(p1circ)
-        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()+0.5*plbox[0].get_height()),circsize,
+#        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()+0.5*plbox[0].get_height()),circsize,
+        p2circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet2'],edgecolor='k')
         ax.add_patch(p2circ)
@@ -571,6 +575,9 @@ class MetaSim:
         xend = 1-4*margin
         xaxis = lines.Line2D([xstart,xend],[margin+0.5*axwidth,margin+0.5*axwidth],c='k')
         ax.add_line(xaxis)
+        ax.text(xstart,margin+0.05*axwidth,'0',ha='center')
+        ax.text(xend,margin+0.05*axwidth,str(self.tmoons),ha='center')
+        ax.text(0.5*(xstart+xend),margin+0.8*axwidth,'Time since first CE [yr]',ha='center')
         
         # add CE events
         CElines = []
@@ -585,22 +592,24 @@ class MetaSim:
         pl1slots = {}
         count = 0
         for p in self.p1mset:
-            pl1slots[p] = plbox[1].get_y() + plbox[1].get_height() - count*moonwidth - margin
+#            pl1slots[p] = plbox[0].get_y() + plbox[0].get_height() - count*moonwidth - margin
+            pl1slots[p] = plbox[0].get_y() + count*moonwidth + margin
             count += 1
         count = 0
         pl2slots = {} 
         for p in self.p2mset:
-            pl2slots[p] = plbox[0].get_y() + plbox[0].get_height() - count*moonwidth - margin
+#            pl2slots[p] = plbox[1].get_y() + plbox[1].get_height() - count*moonwidth - margin
+            pl2slots[p] = plbox[1].get_y() + count*moonwidth + margin
             count += 1
         stslots = {}
         count = 0
         for p in self.stmset:
-            stslots[p] = plbox[0].get_y()-(count+0.5)*moonwidth
+            stslots[p] = plbox[1].get_y() + plbox[1].get_height() + margin + (count+0.5)*moonwidth
             count += 1
         ejslots = {}
         count = 0
         for p in self.ejmset:
-            ejslots[p] = starbox.get_y()-(count+0.5)*moonwidth
+            ejslots[p] = starbox.get_y() + starbox.get_height() + margin + (count+0.5)*moonwidth
             count+=1
 
         moon_y = [[] for i in self.name_moons_flat]
@@ -629,30 +638,45 @@ class MetaSim:
             if 'Planet' in c.names[0] and 'Planet' in c.names[1]:
                 w = xstart - plbox[0].get_x() + (c.t-self.t0)/(self.tend-self.t0)*(xend-xstart)
                 if '1' in c.names[0]:
-                    plbox[1].set_width(w)
-                if '2' in c.names[0]:
                     plbox[0].set_width(w)
+                if '2' in c.names[0]:
+                    plbox[1].set_width(w)
                 continue
             
             try:
-                yind = self.name_moons_flat.index(c.names[0])
+                if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
+                    yind0 = self.name_moons_flat.index(c.names[0])
+                    yind1 = self.name_moons_flat.index(c.names[1])
+                    yind = yind1
+                else:
+                    yind0 = self.name_moons_flat.index(c.names[0])
+                    yind1 = self.name_moons_flat.index(c.names[0])
+                    yind = yind0
                 n1 = c.names[0]
                 n2 = c.names[1]
             except:
                 print('planet lost?',c.names)
             else:
                 try:
-                    xind = min(np.where([i is None for i in self.mhost[yind]])[0][1:])
+#                    print(yind)
+                    start = min(np.where([y is not np.nan for y in moon_y[yind]])[0])
+#                    print(start)
+#                    print(moon_y[yind])
+#                    print(self.mhost[yind])
+                    xind = min(np.where([i is None for i in self.mhost[yind0]])[0][start:])
                 except:
                     yind = self.name_moons_flat.index(c.names[1]) #just in case you removed the wrong body
                     xind = min(np.where([i is None for i in self.mhost[yind]])[0][1:])
                     n1 = c.names[1]
                     n2 = c.names[0]
                 xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
-#                print(xy)
                 ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
-                                             fc=col[n2],ec=col[n1]))
-                
+                                             fc=col[n2],ec=col[n1],zorder=5))
+                # for moon-moon collisions, link the lines
+                if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
+                    ax.add_line(lines.Line2D([xy[0],xy[0]],[moon_y[yind0][xind-1],
+                                                            moon_y[yind1][xind-1]],c=col[n1]))
+        
         plt.savefig(self.filestem+'_timeline.pdf')
                 
         return
