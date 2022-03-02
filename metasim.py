@@ -548,9 +548,9 @@ class MetaSim:
         plbox = []
         Npl = 2
         for i in range(Npl):
-            plbox.append(patches.Rectangle((3*margin,ytracker),1-6*margin,self.Nmoonmax[i-1]*moonwidth,
+            plbox.append(patches.Rectangle((3*margin,ytracker),1-6*margin,self.Nmoonmax[i]*moonwidth,
                                            edgecolor='k',fill=None))
-            ytracker += (margin + self.Nmoonmax[i-1]*moonwidth)
+            ytracker += (margin + self.Nmoonmax[i]*moonwidth)
             ax.add_patch(plbox[i])
         
         circsize = 0.025
@@ -560,12 +560,12 @@ class MetaSim:
                                    facecolor=col[self.name_star],edgecolor='k')
         ax.add_patch(starcirc)
 #        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()+0.5*plbox[1].get_height()),circsize,
-        p1circ = patches.Ellipse((plbox[1].get_x(),plbox[1].get_y()),circsize,
+        p1circ = patches.Ellipse((plbox[0].get_x(),plbox[1].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet1'],edgecolor='k')
         ax.add_patch(p1circ)
 #        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()+0.5*plbox[0].get_height()),circsize,
-        p2circ = patches.Ellipse((plbox[0].get_x(),plbox[0].get_y()),circsize,
+        p2circ = patches.Ellipse((plbox[1].get_x(),plbox[0].get_y()),circsize,
                                   circsize*xsize/ysize,
                                   facecolor=col['Planet2'],edgecolor='k')
         ax.add_patch(p2circ)
@@ -588,12 +588,12 @@ class MetaSim:
         pl1slots = {}
         count = 0
         for p in self.p1mset:
-            pl1slots[p] = plbox[1].get_y() + plbox[1].get_height() - count*moonwidth - margin
+            pl1slots[p] = plbox[0].get_y() + plbox[0].get_height() - count*moonwidth - margin
             count += 1
         count = 0
         pl2slots = {} 
         for p in self.p2mset:
-            pl2slots[p] = plbox[0].get_y() + plbox[0].get_height() - count*moonwidth - margin
+            pl2slots[p] = plbox[1].get_y() + plbox[1].get_height() - count*moonwidth - margin
             count += 1
         stslots = {}
         count = 0
@@ -632,9 +632,9 @@ class MetaSim:
             if 'Planet' in c.names[0] and 'Planet' in c.names[1]:
                 w = xstart - plbox[0].get_x() + (c.t-self.t0)/(self.tend-self.t0)*(xend-xstart)
                 if '1' in c.names[0]:
-                    plbox[1].set_width(w)
-                if '2' in c.names[0]:
                     plbox[0].set_width(w)
+                if '2' in c.names[0]:
+                    plbox[1].set_width(w)
                 continue
             
             try:
