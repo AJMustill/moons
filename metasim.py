@@ -39,6 +39,7 @@ class MetaSim:
 
             self.pl_done = False
             self.is_stop = False
+            self.has_moons = False
 
             with open(self.log) as log:
                 lines = log.readlines()
@@ -67,6 +68,10 @@ class MetaSim:
                 if 'Current planets:' in l:
                     globs.glob_planets = l.split()[2:]
                     globs.glob_npl = len(globs.glob_planets)
+                if 'particle escaped' in l and not self.has_moons:
+                    self.is_stop = True
+                    globs.glob_is_eject = True
+                    print('Run ended with ejection and no CE')
 
                 if not self.pl_done:
                     self.sim.automateSimulationArchive(globs.glob_archive,interval=1000.,deletefile=False)
@@ -194,7 +199,8 @@ class MetaSim:
                 self.sim.integrate(self.sim.t+dt)
             except rebound.Escape as error:
                 print(error)
-                self.sim.remove # XXX not sure what's going on here...haven't finished the ejection bit....
+                with open(self.log,'a') as f:
+                    print(error,file=f)
                 break
                 
         sim_t1 = self.sim.t
