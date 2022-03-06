@@ -12,6 +12,7 @@ import heartbeat
 import logged_merge
 import SimEvent
 import find_primary
+import unhash
 
 class MetaSim:
     
@@ -507,6 +508,17 @@ class MetaSim:
         self.ejnm = [len(n) for n in self.ejmoons]
         self.Nmoonej = len(self.ejmset)
         self.mhost = np.array(self.mhost)
+        
+        s = self.sa[-1]
+        
+        for p in s.particles[1:]:
+            pr = find_primary.find_primary(p,self.name_pl,globs.glob_names,self.sa[i])
+            try:
+                orb = p.calculate_orbit(primary=s.particles[pr])
+            except: #unbound but want orbelts rel to star
+                orb = p.calculate_orbit(primary=s.particles[self.name_star])
+            print(f'{unhash.unhash(p.hash,globs.glob_names)} bound to {pr}: a={orb.a} e={orb.e}')
+
 #        for i in range(len(self.mhost[0])-1):
 #            if (self.mhost[:,i+1] != self.mhost[:,i]).any():
 #                print(self.t[i],self.mhost[:,i+1])
