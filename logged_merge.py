@@ -1,17 +1,33 @@
 import unhash
 import globs
+import numpy as np
 
 def logged_merge(sim_pointer,collided_particles_index):
         
     sim = sim_pointer.contents # retrieve the standard simulation object
     ps = sim.particles # easy access to list of particles
 
-# save at this point
-    sim.simulationarchive_snapshot(globs.glob_archive)
+    # here we check whether the merging bodies are both planets. If so, we need 
+    # an additional check on whether they've really come close enough for a merge
     
     i = collided_particles_index.p1   # Note that p1 < p2 is not guaranteed.    
     j = collided_particles_index.p2 
 
+    n1 = unhash.unhash(ps[i].hash,globs.glob_names)
+    n2 = unhash.unhash(ps[j].hash,globs.glob_names)
+    if 'Planet' in n1 and 'Planet' in n2:
+        xx = (ps[i].x - ps[j].x)**2
+        yy = (ps[i].y - ps[j].y)**2
+        zz = (ps[i].z - ps[j].z)**2
+        d2 = xx + yy + zz
+        dcrit2 = (globs.glob_Rpl[0]+globs.glob_Rpl[1])**2
+        if d2 > dcrit2:
+#            print(f'Close passage of {n1} and {n2} with dist {np.sqrt(d2)} au at {sim.t} years')
+            return 0
+    
+# save at this point
+    sim.simulationarchive_snapshot(globs.glob_archive)
+    
     # Merging Logic 
     total_mass = ps[i].m + ps[j].m
     merged_planet = (ps[i] * ps[i].m + ps[j] * ps[j].m)/total_mass # conservation of momentum

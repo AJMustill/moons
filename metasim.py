@@ -87,6 +87,8 @@ class MetaSim:
             globs.glob_darr = [[[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]],
                                [[9999.9,9999.9,9999.9],[9999.9,9999.9,9999.9]]]
 
+            globs.glob_Rpl = [(1.3 * u.Rjup).to_value(u.au),
+                              (1.3 * u.Rjup).to_value(u.au)] # this is the real radius for planet--planet collisions
                 
             print('Restored from save')
             with open(self.log,'a') as f:
@@ -123,6 +125,8 @@ class MetaSim:
             self.Npl = 2
             Mpl = 2 * u.Mjup * np.ones((self.Npl))
             Rpl = (((9/4*np.pi)*Mpl/(1.8*u.g/u.cm**3))**(1/3)).to(u.au)
+            globs.glob_Rpl = [(1.3 * u.Rjup).to_value(u.au),
+                              (1.3 * u.Rjup).to_value(u.au)] # this is the real radius for planet--planet collisions
 
             a1 = adisc*2
             rH = (a1 * (Mpl[0]/(3*Mstar))**(1/3)).to(u.au)
@@ -673,7 +677,11 @@ class MetaSim:
                 n1 = c.names[0]
                 n2 = c.names[1]
             except:
-                print('planet lost?',c.names)
+                yind0 = self.name_moons_flat.index(c.names[0])
+                yind1 = self.name_moons_flat.index(c.names[0])
+                yind = yind1
+                n1 = c.names[0]
+                n2 = c.names[1]
             else:
                 try:
 #                    print(yind)
@@ -687,13 +695,13 @@ class MetaSim:
                     xind = min(np.where([i is None for i in self.mhost[yind]])[0][1:])
                     n1 = c.names[1]
                     n2 = c.names[0]
-                xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
-                ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
-                                             fc=col[n2],ec=col[n1],zorder=5))
-                # for moon-moon collisions, link the lines
-                if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
-                    ax.add_line(lines.Line2D([xy[0],xy[0]],[moon_y[yind0][xind-1],
-                                                            moon_y[yind1][xind-1]],c=col[n1]))
+            xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
+            ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
+                                         fc=col[n2],ec=col[n1],zorder=5))
+            # for moon-moon collisions, link the lines
+            if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
+                ax.add_line(lines.Line2D([xy[0],xy[0]],[moon_y[yind0][xind-1],
+                                                        moon_y[yind1][xind-1]],c=col[n1]))
         
         plt.savefig(self.filestem+'_timeline.pdf')
                 
