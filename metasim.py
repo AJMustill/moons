@@ -698,6 +698,8 @@ class MetaSim:
             xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
             ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
                                          fc=col[n2],ec=col[n1],zorder=5))
+            if c.names[1] != self.name_star:
+                ax.add_patch(patches.Wedge(xy,0.1,-10,10,fc='k'))
             # for moon-moon collisions, link the lines
             if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
                 ax.add_line(lines.Line2D([xy[0],xy[0]],[moon_y[yind0][xind-1],
