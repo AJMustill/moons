@@ -89,6 +89,9 @@ class MetaSim:
 
             globs.glob_Rpl = [(1.3 * u.Rjup).to_value(u.au),
                               (1.3 * u.Rjup).to_value(u.au)] # this is the real radius for planet--planet collisions
+            globs.glob_Rphys = [(1.0 * u.Rjup).to_value(u.au),
+                                (1.0 * u.Rjup).to_value(u.au)] # this is the real radius for planet--moon collisions
+
                 
             print('Restored from save')
             with open(self.log,'a') as f:
@@ -127,6 +130,8 @@ class MetaSim:
             Rpl = (((9/4*np.pi)*Mpl/(1.8*u.g/u.cm**3))**(1/3)).to(u.au)
             globs.glob_Rpl = [(1.3 * u.Rjup).to_value(u.au),
                               (1.3 * u.Rjup).to_value(u.au)] # this is the real radius for planet--planet collisions
+            globs.glob_Rphys = [(1.0 * u.Rjup).to_value(u.au),
+                                (1.0 * u.Rjup).to_value(u.au)] # this is the real radius for planet--moon collisions
 
             a1 = adisc*2
             rH = (a1 * (Mpl[0]/(3*Mstar))**(1/3)).to(u.au)
@@ -440,18 +445,18 @@ class MetaSim:
 
                 if "collision" in l:
                     chunks = l.split()
-                    colls.append(SimEvent.SimEvent('Coll',(chunks[0],chunks[5]),float(chunks[-2])))
+                    colls.append(SimEvent.CollisionEvent('Coll',(chunks[0],chunks[5]),float(chunks[-2]),self.sa))
 
             return (CEs, colls, ejecs)
 
     def analyse(self):
         
+        self.sa = rebound.SimulationArchive(self.archive)
+
         (CEs, colls, ejecs) = self.parse_log()
         self.CEs = CEs
         self.colls = colls
         self.ejecs = ejecs
-
-        self.sa = rebound.SimulationArchive(self.archive)
         
         self.t0 = min([s.t for s in self.sa if len(s.particles) > 3])
         self.tend = self.sa[-1].t
@@ -522,11 +527,8 @@ class MetaSim:
             except: #unbound but want orbelts rel to star
                 orb = p.calculate_orbit(primary=s.particles[self.name_star])
             print(f'{unhash.unhash(p.hash,globs.glob_names)} bound to {pr}: a={orb.a} e={orb.e}')
-
-#        for i in range(len(self.mhost[0])-1):
-#            if (self.mhost[:,i+1] != self.mhost[:,i]).any():
-#                print(self.t[i],self.mhost[:,i+1])
-        
+    
+    
         return
 
     def make_timeline(self):
@@ -698,6 +700,17 @@ class MetaSim:
             xy = ((c.t-self.t0)/(self.tend-self.t0) * (xend-xstart) + xstart, moon_y[yind][xind-1])
             ax.add_patch(patches.Ellipse(xy,circsize,circsize*xsize/ysize,lw=3,
                                          fc=col[n2],ec=col[n1],zorder=5))
+            if c.names[1] != self.name_star:
+                if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
+                    ax.add_patch(patches.Wedge(xy,0.1,-10,10,fc='k'))
+                elif 'Planet' in c.names[1] and not 'Planet' in c.names[0]:
+                    ind = np.where([p == c.names[1] for p in [n for n in globs.glob_names if 'Planet' in n]])[0][0]
+                    if c.q >= globs.glob_Rphys[ind]: #XXX check both and see if bound to either?
+                        if c.a > 0:
+                            ax.add_patch(patches.Wedge(xy,0.1,-10,10,fc='k'))
+                        if c.a <= 0:
+                            ax.add_patch(patches.Wedge(xy,0.1,-10,10,fc='grey'))
+                    
             # for moon-moon collisions, link the lines
             if not 'Planet' in c.names[0] and not 'Planet' in c.names[1]:
                 ax.add_line(lines.Line2D([xy[0],xy[0]],[moon_y[yind0][xind-1],
