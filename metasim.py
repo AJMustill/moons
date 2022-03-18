@@ -16,7 +16,7 @@ import unhash
 
 class MetaSim:
     
-    def __init__(self,filestem='test/test'):
+    def __init__(self,filestem='test/test',tmoons=1e3):
         
         print('Simulation '+filestem)
         print()
@@ -31,7 +31,7 @@ class MetaSim:
         # times to run for
         self.tmax = 1e6
         self.TINY = 1e-3
-        self.tmoons = 1e3
+        self.tmoons = tmoons
 
         try:
 
@@ -62,8 +62,8 @@ class MetaSim:
                     globs.glob_names = globs.glob_names + self.name_moons_flat
                 if 'Planets-only simulation complete' in l:
                     self.pl_done = True
-                if 'Moons simulation complete' in l:
-                    self.is_stop = True
+#                if 'Moons simulation complete' in l:
+#                    self.is_stop = True
                 if 'CE between ' in l:
                     globs.glob_is_close = True
                 if 'Current planets:' in l:
@@ -74,12 +74,17 @@ class MetaSim:
                     globs.glob_is_eject = True
                     print('Run ended with ejection and no CE')
 
-                if not self.pl_done:
-                    self.sim.automateSimulationArchive(globs.glob_archive,interval=1000.,deletefile=False)
+            if not self.pl_done:
+                self.sim.automateSimulationArchive(globs.glob_archive,interval=1000.,deletefile=False)
 
-                if self.pl_done and not self.is_stop:
-                    self.sim.automateSimulationArchive(globs.glob_archive,interval=1.,deletefile=False)
+            if self.pl_done and not self.is_stop:
+                self.sim.automateSimulationArchive(globs.glob_archive,interval=1.,deletefile=False)
                     
+            if self.has_moons:
+                if self.sim.t >= self.tend:
+                    self.is_stop = True
+                
+            
             globs.glob_npl_start = len(self.name_pl)
             if len(globs.glob_planets) == 0:
                 globs.glob_planets = [n for n in self.name_pl]
