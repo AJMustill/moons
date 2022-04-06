@@ -326,9 +326,9 @@ class MetaSim:
         if self.is_stop:
             return
         
-        print('Running moons simulation...')
+        print(f'Running moons simulation at {self.sim.t} years...')
         with open(self.log,'a') as f:
-            print('Running moons simulation...',file=f)
+            print(f'Running moons simulation at {self.sim.t} years...',file=f)
             
         sim_t0 = self.sim.t
         clock_t0 = time.time()
