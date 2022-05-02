@@ -328,7 +328,7 @@ class MetaSim:
         
         print(f'Running moons simulation at {self.sim.t} years...')
         with open(self.log,'a') as f:
-            print(f'Running moons simulation at {self.sim.t} years...')
+            print(f'Running moons simulation at {self.sim.t} years...',file=f)
             
         sim_t0 = self.sim.t
         clock_t0 = time.time()
