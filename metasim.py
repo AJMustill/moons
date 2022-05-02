@@ -99,8 +99,8 @@ class MetaSim:
 
                 
             print('Restored from save')
-            with open(self.log,'a') as f:
-                print('Restored from save',file=f)
+#            with open(self.log,'a') as f:
+#                print('Restored from save',file=f)
         
         except (FileNotFoundError, RuntimeError):
 
@@ -326,9 +326,9 @@ class MetaSim:
         if self.is_stop:
             return
         
-        print('Running moons simulation...')
+        print(f'Running moons simulation at {self.sim.t} years...')
         with open(self.log,'a') as f:
-            print('Running moons simulation...',file=f)
+            print(f'Running moons simulation at {self.sim.t} years...')
             
         sim_t0 = self.sim.t
         clock_t0 = time.time()
@@ -339,6 +339,8 @@ class MetaSim:
 
         self.sim.automateSimulationArchive(self.archive,interval=1.,deletefile=False)
 
+        verbose = False
+        
         while self.sim.t < self.tend:
             try:
                 self.sim.integrate(self.tend)
@@ -373,15 +375,15 @@ class MetaSim:
                 Ein = self.sim.calculate_energy()
 
                 for h in hashes:
-                    print(f'{h} ejected at {sim.t} years')
+                    print(f'{h} ejected at {self.sim.t} years')
                     print(self.sim.particles[h])
                     with open(globs.glob_log,'a') as f:
-                        print(f'{h} ejected at {sim.t} years',file=f)
+                        print(f'{h} ejected at {self.sim.t} years',file=f)
                         print(self.sim.particles[h],file=f)
                     if h in globs.glob_planets:
                         globs.glob_planets.remove(h)
                         globs.glob_npl = globs.glob_npl-1
-                        self.sim.remove(hash=h)
+                    self.sim.remove(hash=h)
 
                 print('Current planets: '+' '.join(globs.glob_planets))
                 with open(globs.glob_log,'a') as f:
@@ -525,12 +527,15 @@ class MetaSim:
         
         s = self.sa[-1]
         
+        self.orb = []
+        
         for p in s.particles[1:]:
             pr = find_primary.find_primary(p,self.name_pl,globs.glob_names,self.sa[i])
             try:
                 orb = p.calculate_orbit(primary=s.particles[pr])
             except: #unbound but want orbelts rel to star
                 orb = p.calculate_orbit(primary=s.particles[self.name_star])
+            self.orb.append(orb)
             print(f'{unhash.unhash(p.hash,globs.glob_names)} bound to {pr}: a={orb.a} e={orb.e}')
     
     
