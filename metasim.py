@@ -328,7 +328,7 @@ class MetaSim:
         
         print(f'Running moons simulation at {self.sim.t} years...')
         with open(self.log,'a') as f:
-            print(f'Running moons simulation at {self.sim.t} years...')
+            print(f'Running moons simulation at {self.sim.t} years...',file=f)
             
         sim_t0 = self.sim.t
         clock_t0 = time.time()
@@ -465,7 +465,17 @@ class MetaSim:
         self.colls = colls
         self.ejecs = ejecs
         
-        self.t0 = min([s.t for s in self.sa if len(s.particles) > 3])
+        #check if moons were ever added:
+        if not self.has_moons:
+            print("Moons never added")
+            return 
+            
+        try:
+            self.t0 = min([s.t for s in self.sa if len(s.particles) > 3])
+        except ValueError:
+            print("Moons never added")
+            return 
+        
         self.tend = self.sa[-1].t
         self.post_moons = np.where([s.t >= self.t0 for s in self.sa])[0]
         self.post_moons = [int(i) for i in self.post_moons] # have to do int casts explicitly
@@ -542,6 +552,9 @@ class MetaSim:
         return
 
     def make_timeline(self):
+        
+        if not self.has_moons:
+            return
         
         CE_col = 'red'
         col = {self.name_moons_flat[0]:'sienna',
