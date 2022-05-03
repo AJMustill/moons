@@ -740,5 +740,6 @@ class MetaSim:
                                                         moon_y[yind1][xind-1]],c=col[n1]))
         
         plt.savefig(self.filestem+'_timeline.pdf')
+        plt.close()
                 
         return
