@@ -471,9 +471,7 @@ class MetaSim:
         names = [unhash.unhash(p.hash,globs.glob_names) for p in self.sa[-1].particles]
         self.surv_pl = [n for n in names if n in self.name_pl]
         self.npl = len(self.surv_pl)
-        
-        
-        
+                
         #check if moons were ever added:
         if not self.has_moons:
             print("Moons never added")
@@ -560,6 +558,30 @@ class MetaSim:
             self.primary[name] = pr
             print(f'{name} bound to {pr}: a={orb.a} e={orb.e}')
     
+        # how many debris trails per planet
+        self.n_debris = dict()
+        self.n_moon_moon_coll = 0
+        self.n_TDE = 0
+        self.n_bound_TDE = 0
+        for p in self.name_pl:
+            self.n_debris[p] = 0
+            
+        for c in self.colls:
+            # TDE with bound debris
+            if not "Planet" in c.names[0] and "Planet" in c.names[1]:
+                self.n_TDE += 1
+                if c.a > 0:
+                    self.n_bound_TDE += 1
+                    self.n_debris[c.names[1]] += 1
+            # Moon-moon collision with bound moon
+            if not "Planet" in c.names[0] and not "Planet" in c.names[1] and not c.names[1] == self.name_star:
+                #get host of merger product at next saved timestep and check it's a planet
+                ind = int(np.min(np.where([c.t < s.t for s in self.sa])))
+                host = find_primary.find_primary(c.names[1],self.name_pl,globs.glob_names,self.sa[ind])
+                self.n_moon_moon_coll += 1
+                if host is not None:
+                    if "Planet" in host:
+                        self.n_debris[host] += 1
     
         return
 
