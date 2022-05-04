@@ -33,6 +33,7 @@ class MetaSim:
         self.TINY = 1e-3
         self.tmoons = tmoons
 
+        # try restoring existing simulation
         try:
 
             self.sim = rebound.Simulation(self.archive)
@@ -102,6 +103,7 @@ class MetaSim:
 #            with open(self.log,'a') as f:
 #                print('Restored from save',file=f)
         
+        # create new simulation
         except (FileNotFoundError, RuntimeError):
 
             self.pl_done = False
@@ -464,6 +466,9 @@ class MetaSim:
         self.CEs = CEs
         self.colls = colls
         self.ejecs = ejecs
+        
+        # final number of planets
+        self.npl = np.sum([rebound.hash(n).value in [p.hash.value for p in self.sa[-1].particles] for n in self.name_pl])
         
         #check if moons were ever added:
         if not self.has_moons:
