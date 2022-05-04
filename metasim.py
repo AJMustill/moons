@@ -468,7 +468,11 @@ class MetaSim:
         self.ejecs = ejecs
         
         # final number of planets
-        self.npl = np.sum([rebound.hash(n).value in [p.hash.value for p in self.sa[-1].particles] for n in self.name_pl])
+        names = [unhash.unhash(p.hash,globs.glob_names) for p in self.sa[-1].particles]
+        self.surv_pl = [n for n in names if n in self.name_pl]
+        self.npl = len(self.surv_pl)
+        
+        
         
         #check if moons were ever added:
         if not self.has_moons:
@@ -542,16 +546,19 @@ class MetaSim:
         
         s = self.sa[-1]
         
-        self.orb = []
+        self.orb = dict()
+        self.primary = dict()
         
         for p in s.particles[1:]:
-            pr = find_primary.find_primary(p,self.name_pl,globs.glob_names,self.sa[i])
+            name = unhash.unhash(p.hash,globs.glob_names)
+            pr = find_primary.find_primary(p,self.name_pl,globs.glob_names,s)
             try:
                 orb = p.calculate_orbit(primary=s.particles[pr])
             except: #unbound but want orbelts rel to star
                 orb = p.calculate_orbit(primary=s.particles[self.name_star])
-            self.orb.append(orb)
-            print(f'{unhash.unhash(p.hash,globs.glob_names)} bound to {pr}: a={orb.a} e={orb.e}')
+            self.orb[name] = orb
+            self.primary[name] = pr
+            print(f'{name} bound to {pr}: a={orb.a} e={orb.e}')
     
     
         return
