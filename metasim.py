@@ -13,6 +13,7 @@ import logged_merge
 import SimEvent
 import find_primary
 import unhash
+import trail
 
 class MetaSim:
     
@@ -552,17 +553,21 @@ class MetaSim:
             pr = find_primary.find_primary(p,self.name_pl,globs.glob_names,s)
             try:
                 orb = p.calculate_orbit(primary=s.particles[pr])
-            except: #unbound but want orbelts rel to star
+            except: 
+                #unbound but want orbelts rel to star. 
+                #Jacobi might be better for distant planets but I don't think REBOUND reorders correctly
                 orb = p.calculate_orbit(primary=s.particles[self.name_star])
             self.orb[name] = orb
             self.primary[name] = pr
-            print(f'{name} bound to {pr}: a={orb.a} e={orb.e}')
+            print(f'{name} orbits {pr}: a={orb.a} e={orb.e}')
     
         # how many debris trails per planet
         self.n_debris = dict()
         self.n_moon_moon_coll = 0
         self.n_TDE = 0
         self.n_bound_TDE = 0
+        # orbits of debris trails
+        self.trails = []
         for p in self.name_pl:
             self.n_debris[p] = 0
             
@@ -573,6 +578,10 @@ class MetaSim:
                 if c.a > 0:
                     self.n_bound_TDE += 1
                     self.n_debris[c.names[1]] += 1
+#                    I1 = c.orb.I
+#                    O1 = c.orb.Omega
+#                    I2 = 0
+                    self.trails.append(trail.Trail(time=c.t,host=c.names[1],parents=[c.names[0]],a=c.a,e=c.orb.e))
             # Moon-moon collision with bound moon
             if not "Planet" in c.names[0] and not "Planet" in c.names[1] and not c.names[1] == self.name_star:
                 #get host of merger product at next saved timestep and check it's a planet
@@ -582,6 +591,7 @@ class MetaSim:
                 if host is not None:
                     if "Planet" in host:
                         self.n_debris[host] += 1
+                        self.trails.append(trail.Trail(time=c.t,host=host,parents=c.names))
     
         return
 
