@@ -13,6 +13,7 @@ import logged_merge
 import SimEvent
 import find_primary
 import unhash
+import trail
 
 class MetaSim:
     
@@ -33,6 +34,7 @@ class MetaSim:
         self.TINY = 1e-3
         self.tmoons = tmoons
 
+        # try restoring existing simulation
         try:
 
             self.sim = rebound.Simulation(self.archive)
@@ -102,6 +104,7 @@ class MetaSim:
 #            with open(self.log,'a') as f:
 #                print('Restored from save',file=f)
         
+        # create new simulation
         except (FileNotFoundError, RuntimeError):
 
             self.pl_done = False
@@ -465,6 +468,11 @@ class MetaSim:
         self.colls = colls
         self.ejecs = ejecs
         
+        # final number of planets
+        names = [unhash.unhash(p.hash,globs.glob_names) for p in self.sa[-1].particles]
+        self.surv_pl = [n for n in names if n in self.name_pl]
+        self.npl = len(self.surv_pl)
+                
         #check if moons were ever added:
         if not self.has_moons:
             print("Moons never added")
@@ -537,17 +545,55 @@ class MetaSim:
         
         s = self.sa[-1]
         
-        self.orb = []
+        self.orb = dict()
+        self.primary = dict()
         
         for p in s.particles[1:]:
-            pr = find_primary.find_primary(p,self.name_pl,globs.glob_names,self.sa[i])
+            name = unhash.unhash(p.hash,globs.glob_names)
+            pr = find_primary.find_primary(p,self.name_pl,globs.glob_names,s)
             try:
                 orb = p.calculate_orbit(primary=s.particles[pr])
-            except: #unbound but want orbelts rel to star
+            except: 
+                #unbound but want orbelts rel to star. 
+                #Jacobi might be better for distant planets but I don't think REBOUND reorders correctly
                 orb = p.calculate_orbit(primary=s.particles[self.name_star])
-            self.orb.append(orb)
-            print(f'{unhash.unhash(p.hash,globs.glob_names)} bound to {pr}: a={orb.a} e={orb.e}')
+            self.orb[name] = orb
+            self.primary[name] = pr
+            print(f'{name} orbits {pr}: a={orb.a} e={orb.e}')
     
+        # how many debris trails per planet
+        self.n_debris = dict()
+        self.n_moon_moon_coll = 0
+        self.n_TDE = 0
+        self.n_bound_TDE = 0
+        # orbits of debris trails
+        self.trails = []
+        for p in self.name_pl:
+            self.n_debris[p] = 0
+            
+        for c in self.colls:
+            # TDE with bound debris
+            if not "Planet" in c.names[0] and "Planet" in c.names[1]:
+                self.n_TDE += 1
+                if c.a > 0:
+                    self.n_bound_TDE += 1
+                    self.n_debris[c.names[1]] += 1
+#                    I1 = c.orb.I
+#                    O1 = c.orb.Omega
+#                    I2 = 0
+                    self.trails.append(trail.Trail(time=c.t,host=c.names[1],parents=[c.names[0]],a=c.a,e=c.orb.e,
+                                                   I=c.orb.inc,Om=c.orb.Omega))
+            # Moon-moon collision with bound moon
+            if not "Planet" in c.names[0] and not "Planet" in c.names[1] and not c.names[1] == self.name_star:
+                #get host of merger product at next saved timestep and check it's a planet
+                ind = int(np.min(np.where([c.t < s.t for s in self.sa])))
+                host = find_primary.find_primary(c.names[1],self.name_pl,globs.glob_names,self.sa[ind])
+                self.n_moon_moon_coll += 1
+                if host is not None:
+                    if "Planet" in host:
+                        self.n_debris[host] += 1
+                        self.trails.append(trail.Trail(time=c.t,host=host,parents=c.names,a=c.a,e=c.orb.e,
+                                                       I=c.orb.inc,Om=c.orb.Omega))
     
         return
 
