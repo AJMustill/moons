@@ -581,7 +581,8 @@ class MetaSim:
 #                    I1 = c.orb.I
 #                    O1 = c.orb.Omega
 #                    I2 = 0
-                    self.trails.append(trail.Trail(time=c.t,host=c.names[1],parents=[c.names[0]],a=c.a,e=c.orb.e))
+                    self.trails.append(trail.Trail(time=c.t,host=c.names[1],parents=[c.names[0]],a=c.a,e=c.orb.e,
+                                                   I=c.orb.inc,Om=c.orb.Omega))
             # Moon-moon collision with bound moon
             if not "Planet" in c.names[0] and not "Planet" in c.names[1] and not c.names[1] == self.name_star:
                 #get host of merger product at next saved timestep and check it's a planet
@@ -591,7 +592,8 @@ class MetaSim:
                 if host is not None:
                     if "Planet" in host:
                         self.n_debris[host] += 1
-                        self.trails.append(trail.Trail(time=c.t,host=host,parents=c.names))
+                        self.trails.append(trail.Trail(time=c.t,host=host,parents=c.names,a=c.a,e=c.orb.e,
+                                                       I=c.orb.inc,Om=c.orb.Omega))
     
         return
 
