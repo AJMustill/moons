@@ -668,9 +668,9 @@ class MetaSim:
         xend = 1-4*margin
         xaxis = lines.Line2D([xstart,xend],[margin+0.5*axwidth,margin+0.5*axwidth],c='k')
         ax.add_line(xaxis)
-        ax.text(xstart,margin+0.05*axwidth,'0',ha='center')
-        ax.text(xend,margin+0.05*axwidth,str(self.tmoons),ha='center')
-        ax.text(0.5*(xstart+xend),margin+0.8*axwidth,'Time since first CE [yr]',ha='center')
+        ax.text(xstart,margin+0.8*axwidth,'0',ha='center',fontsize=16)
+        ax.text(xend,margin+0.8*axwidth,str(self.tmoons),ha='center',fontsize=16)
+        ax.text(0.5*(xstart+xend),margin+0.8*axwidth,'Time since first CE [yr]',ha='center',fontsize=16)
         
         # add CE events
         CElines = []
@@ -785,7 +785,7 @@ class MetaSim:
                 ax.add_line(lines.Line2D([xy[0],xy[0]],[moon_y[yind0][xind-1],
                                                         moon_y[yind1][xind-1]],c=col[n1]))
         
-        plt.savefig(self.filestem+'_timeline.pdf')
+        plt.savefig(self.filestem+'_timeline_largetext.pdf')
         plt.close()
                 
         return
