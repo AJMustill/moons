@@ -668,9 +668,9 @@ class MetaSim:
         xend = 1-4*margin
         xaxis = lines.Line2D([xstart,xend],[margin+0.5*axwidth,margin+0.5*axwidth],c='k')
         ax.add_line(xaxis)
-        ax.text(xstart,margin+0.8*axwidth,'0',ha='center',fontsize=16)
-        ax.text(xend,margin+0.8*axwidth,str(self.tmoons),ha='center',fontsize=16)
-        ax.text(0.5*(xstart+xend),margin+0.8*axwidth,'Time since first CE [yr]',ha='center',fontsize=16)
+        ax.text(xstart,margin+0.75*axwidth,'0',ha='center',fontsize=18)
+        ax.text(xend,margin+0.75*axwidth,str(self.tmoons),ha='center',fontsize=18)
+        ax.text(0.5*(xstart+xend),margin+0.75*axwidth,'Time since first CE [yr]',ha='center',fontsize=18)
         
         # add CE events
         CElines = []
